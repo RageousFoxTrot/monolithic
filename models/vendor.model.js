@@ -1,41 +1,35 @@
 import { model as DBModel, Schema as DBSchema } from 'mongoose';
 const $types = DBSchema.Types;
 
-const UserSchema = new DBSchema(
+const VendorSchema = new DBSchema(
   {
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    salt: { type: String, required: true },
-    phone: String,
-    address: [{ type: $types.ObjectId, ref: 'address', require: true }],
-    cart: [
+    customer: {
+      type: $types.ObjectId,
+      ref: 'customer',
+      required: true,
+      unique: true,
+    },
+    sellables: [{ type: $types.ObjectId, ref: 'product', require: true }],
+    orders: [
       {
         product: { type: $types.ObjectId, ref: 'product', required: true },
         amount: { type: Number, required: true },
+        customer: { type: $types.ObjectId, ref: 'customer', required: true },
       },
     ],
-    orders: [{ type: $types.ObjectId, ref: 'order', required: true }],
-    wishlist: [{ type: $types.ObjectId, ref: 'order', required: true }],
-    vendor: { type: $types.ObjectId, ref: 'vendor', default: null },
   },
   {
     toJSON: {
       transform(doc, $) {
         delete $['__v'];
-        delete $['password'];
-        delete $['salt'];
       },
     },
     timestamps: true,
   }
 );
 
-UserSchema.pre('validate', () => {
+VendorSchema.pre('validate', () => {
   // Revise if schema data is valid before creating record.
 });
 
-UserSchema.pre('save', () => {
-  // If password is included, hash with the salt and override it.
-});
-
-export default DBModel('customer', UserSchema, 'customer');
+export default DBModel('vendor', VendorSchema, 'vendor');
