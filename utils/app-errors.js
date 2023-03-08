@@ -1,54 +1,67 @@
-import { createLogger, transports } from 'winston';
+export const STATUS_CODES = {
+  OK: 200,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 403,
+  NOT_FOUND: 404,
+  INTERNAL_ERROR: 500,
+};
 
-const LogErrors = createLogger({
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: 'app_error.log' }),
-  ],
-});
+export class AppError extends Error {
+  constructor(
+    name,
+    statusCode,
+    description,
+    isOperational,
+    errorStack,
+    loggingErrorResponse
+  ) {
+    super(description);
 
-class ErrorLogger {
-  constructor() {}
-
-  async logError(e) {
-    console.log('==================== Start Error Logger ===============');
-    LogErrors.log({
-      private: true,
-      level: 'error',
-      message: `${new Date()}-${JSON.stringify(e)}`,
-    });
-    console.log('==================== End Error Logger =================');
-
-    // Bootstrap other loggers.
-
-    return false;
-  }
-
-  isTrustError(e) {
-    return e instanceof AppError ? e.isOperational : false;
+    Object.setPrototypeOf(this, new.target.prototype);
+    this.name = name;
+    this.statusCode = statusCode;
+    this.isOperational = isOperational;
+    this.errorStack = errorStack;
+    this.logError = loggingErrorResponse;
+    Error.captureStackTrace(this);
   }
 }
 
-export const ErrorHandler = async (e, req, res, next) => {
-  const errorLogger = new ErrorLogger();
+// API Specific Errors.
+export class APIError extends AppError {
+  constructor(
+    name,
+    statusCode = STATUS_CODES.INTERNAL_ERROR,
+    description = 'Internal Server Error',
+    isOperational = true
+  ) {
+    super(name, statusCode, description, isOperational);
+  }
+}
 
-  process.on('uncaughtException', (reason, promise) => {
-    console.log(reason, 'UNHANDLED');
-    if (errorLogger.isTrustError(e) && process.env['NODE_ENV'] !== 'dev') {
-      console.log(
-        `Process with PID ${process.pid} is about to end.\nA new instance will replace it.`
-      );
-      setTimeout(() => {
-        process.on('exit', async () => {
-          debugger;
-          (await import('child_process')).spawn(process.argv.shift(), '', {
-            cwd: process.cwd(),
-            detached: true,
-            stdio: 'inherit',
-          });
-        });
-        process.exit(0x1001);
-      }, 5000);
-    }
-  });
-};
+// Bad Request Errors.
+export class BadRequestError extends AppError {
+  constructor(description = 'Bad Request', loggingErrorResponse) {
+    super(
+      'NOT FOUND',
+      STATUS_CODES.BAD_REQUEST,
+      description,
+      true,
+      false,
+      loggingErrorResponse
+    );
+  }
+}
+
+// Failed Validations Errors.
+export class ValidationError extends AppError {
+  constructor(description = 'Validation Error', errorStack) {
+    super(
+      'BAD REQUEST',
+      STATUS_CODES.BAD_REQUEST,
+      description,
+      true,
+      errorStack
+    );
+  }
+}
