@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { ErrorHandler } from './utils/error-handler.js';
 
 export default async (app) => {
   app.use(express.json({ limit: '1mb' }));
@@ -9,5 +10,5 @@ export default async (app) => {
 
   // APIS
 
-  //Error Handling
+  app.use(ErrorHandler);
 };

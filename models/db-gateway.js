@@ -6,7 +6,6 @@ export async function OpenMongoDBConnection() {
     await DBConnect(CONFIG.DB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      useCreateIndex: true,
     });
     console.log('Connection to database has been established');
   } catch (e) {
