@@ -3,7 +3,7 @@ import CONFIG from '../config.js';
 
 export async function OpenMongoDBConnection() {
   try {
-    await DBConnect(CONFIG.DB_URL, {
+    await DBConnect(CONFIG.DB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,

@@ -41,15 +41,11 @@ export const ErrorHandler = async (e, req, res, next) => {
       setTimeout(() => {
         process.on('exit', async () => {
           debugger;
-          (await import('child_process')).spawn(
-            process.argv.shift().split(' ').shift(),
-            '',
-            {
-              cwd: process.cwd(),
-              detached: true,
-              stdio: 'inherit',
-            }
-          );
+          (await import('child_process')).spawn(process.argv.shift(), '', {
+            cwd: process.cwd(),
+            detached: true,
+            stdio: 'inherit',
+          });
         });
         process.exit(0x1001);
       }, 5000);

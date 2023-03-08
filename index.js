@@ -1,7 +1,7 @@
 import express from 'express';
 import { OpenMongoDBConnection } from './models/db-gateway.js';
 import expressApp from './express-app.js';
-import CONFIG from './congfig.js';
+import CONFIG from './config.js';
 
 const StartServer = async () => {
   const app = express();
