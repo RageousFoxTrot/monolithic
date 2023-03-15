@@ -1,17 +1,40 @@
 import { model as DBModel, Schema as DBSchema } from 'mongoose';
+import { isEmail, isValidPassword, isPhoneValid } from '../utils/validators.js';
 const $types = DBSchema.Types;
 
-const UserSchema = new DBSchema(
+const CostumerSchema = new DBSchema(
   {
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: ($) => isEmail($),
+        message: 'Email is not valid.',
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      validate: {
+        validator: ($) => isValidPassword($),
+        message: 'Password is not valid.',
+      },
+    },
     salt: { type: String, required: true },
-    phone: String,
+    phone: {
+      type: String,
+      unique: true,
+      validate: {
+        validator: ($) => isPhoneValid($),
+        message: 'Phone number is not valid.',
+      },
+    },
     address: [{ type: $types.ObjectId, ref: 'address', require: true }],
     cart: [
       {
         product: { type: $types.ObjectId, ref: 'product', required: true },
-        amount: { type: Number, required: true },
+        amount: { type: Number, required: true, min: 1 },
       },
     ],
     orders: [{ type: $types.ObjectId, ref: 'order', required: true }],
@@ -30,12 +53,8 @@ const UserSchema = new DBSchema(
   }
 );
 
-UserSchema.pre('validate', () => {
-  // Revise if schema data is valid before creating record.
-});
-
-UserSchema.pre('save', () => {
+CostumerSchema.pre('save', () => {
   // If password is included, hash with the salt and override it.
 });
 
-export default DBModel('customer', UserSchema, 'customer');
+export default DBModel('customer', CostumerSchema, 'customer');
